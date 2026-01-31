@@ -6,6 +6,8 @@
 #include <iomanip>
 #include <sstream>
 #include <ctime>
+#include <cctype>
+#include <regex>
 
 using namespace std;
 enum class VehicleType {TwoWheeler, FourWheeler}; // We use an enum to standardize inputs, remove errors with typos and stuff
@@ -21,6 +23,18 @@ static string formatTime(long long ms) {
     out << put_time(lt, "%Y-%m-%d %H:%M:%S");
     return out.str();
 }
+static string normalizePlate(string plate) { //used to normalize license plate input
+    for (char& c : plate) {// looks through characters the plate string
+        c = static_cast<char>(toupper(static_cast<unsigned char>(c)));//each character is converted to uppercase
+    }
+    return plate; //the uppercase string is returned
+}
+static bool isValidPlateFormat(const string& plate) {//used to check whether or license plate inputs are valid.
+    static const regex plateRegex("^[A-Z]{2}[\\ -]{0,1}[0-9]{2}[\\ "
+        "-]{0,1}[A-Z]{1,2}[\\ -]{0,1}[0-9]{4}$"); //Only god knows how regex works
+    return regex_match(plate, plateRegex); //returns a boolean if it matches or not
+}
+
 class ParkingLot {
     //Ticket holds ticket details, ie, the id of the ticket specifically, the License plate of the ticket, the parking slot its in, and the amount of time its been in the parking.
     struct Ticket {
@@ -58,6 +72,7 @@ public:
                                                                     // occupied(slots, false) means make a vector of length slots, and fill it with false (all free).
                                                                     // slotPlate initializes an empty vector for the License plate in each slot (needed for status)
     string park(const string& plate, VehicleType type) { //const string& plate basically means that even though we're accessing plate directly and not through a copy, we can't modify it.
+        if (hasActivePlate(plate)) return "";
         int slot = -1;
         for (int i = 0; i < nSlots; i++) {
             if (!occupied[i]) { slot = i; break; }
@@ -75,6 +90,14 @@ public:
         t.entryMs = nowMs();
         activeTickets[t.ticketId] = t;
         return t.ticketId;
+    }
+    bool hasActivePlate(const string& plate) const {
+        for (const auto& kv : activeTickets) {
+            if (kv.second.plate == plate) {
+                return true;
+            }
+        }
+        return false;
     }
     int computeBill(VehicleType t, long long h) {
         if (t == VehicleType::FourWheeler) {
@@ -149,7 +172,15 @@ public:
 };
 
 int main() {
-    ParkingLot lot(2); //Should probably take input from the user in order to find out how large their parking lot is, or atleast hold 10 in a macro so that it's editable
+    int lotSize = 0;
+    cout << "Enter number of parking slots: ";
+    while (!(cin >> lotSize) || lotSize <= 0) {
+        cin.clear();
+        int ch;
+        while ((ch = cin.get()) != '\n' && ch != EOF) {}
+        cout << "Invalid. Enter a positive number of slots: ";
+    }
+    ParkingLot lot(lotSize);
     int choice = 0;
 
     while (choice != 5) {
@@ -166,6 +197,15 @@ int main() {
                 int typeInput;
                 cout << "Enter License Plate: ";
                 cin >> plate;
+                plate = normalizePlate(plate);
+                if (!isValidPlateFormat(plate)) {
+                    cout << "Invalid plate format. Expected format: AA11AA1111\n";
+                    break;
+                }
+                if (lot.hasActivePlate(plate)) {
+                    cout << "That vehicle is already parked.\n";
+                    break;
+                }
                 cout << "Enter Vehicle Type(1 for Two Wheeler, 2 for Four Wheeler): ";
                 while (!(cin >> typeInput) || (typeInput != 1 && typeInput != 2)) {
                     cin.clear();
