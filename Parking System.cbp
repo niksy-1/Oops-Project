@@ -19,6 +19,7 @@
 				<Option compiler="gcc-mingw64" />
 			</Target>
 		</Build>
+		<Unit filename="Models.h" />
 		<Unit filename="main.cpp" />
 		<Extensions />
 	</Project>

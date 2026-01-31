@@ -2,7 +2,7 @@
 #include <vector>
 #include <unordered_map>
 #include <string>
-#include <chrono>
+#include <chrono> //chrono is used to use the system time
 
 using namespace std;
 static long long nowMs() {
@@ -16,15 +16,15 @@ class ParkingLot {
         string ticketId;
         string plate;
         int slotId;
-        long long entryMs;
+        long long entryMs; //This needs to be in long long since we're storing time in milliseconds, so 64 bit number is needed
     };
     int nSlots; //total number of slots in the parking lot
     vector<bool> occupied;
     vector<string> slotPlate;
     unordered_map<string, Ticket> activeTickets; //creates a map for each ticket and each car number
-    int nextTicketNo = 1; //Should be edited, technically issuing ticket numbers sequentially is bad Cybersecurity practice.
+    int nextTicketNo = 1; //Should be edited, technically issuing ticket numbers sequentially is bad cybersecurity practice.
 public:
-    ParkingLot(int slots) : nSlots(slots), occupied(slots, false), slotPlate(slots) {} //Constructor to actually create parking lots, and set the value of all to empty.
+    ParkingLot(int slots) : nSlots(slots), occupied(slots, false), slotPlate(slots, "") {} //Constructor to actually create parking lots, and set the value of all to empty.
                                                                     // occupied(slots, false) means make a vector of length slots, and fill it with false (all free).
                                                                     // slotPlate initializes an empty vector for the License plate in each slot (needed for status)
     string park(const string& plate) { //const string& plate basically means that even though we're accessing plate directly and not through a copy, we can't modify it.
@@ -47,6 +47,9 @@ public:
     }
 
     bool unpark(const string& ticketId) {     // Returns true if ticket existed and car was removed, false otherwise.
+                                            //We use bool as the return type because we can return true if the operation is successful, and false if the operation is
+                                            //not successful, We could use integer as our return type if we wanted more detailed error codes, ie return 404 if the id
+                                            //is not found, or return 403 if the ID exists but couldn't remove it for some reason and so on.
         auto it = activeTickets.find(ticketId);
         if (it == activeTickets.end()) return false; // Ticket does not exist (invalid ID)
         // Free the slot that this ticket was occupying
@@ -57,14 +60,14 @@ public:
     }
     void status() const {
         int freeCount = 0;
-        for (bool x : occupied) if (!x) freeCount++;
+        for (bool x : occupied) if (!x) freeCount++; //Just a compressed method to loop through the occupied matrix,
 
         cout << "Total slots: " << nSlots
              << " | Free: " << freeCount
              << " | Occupied: " << (nSlots - freeCount) << "\n";
 
-        for (int i = 0; i < (int)slotPlate.size(); i++) {
-            if (slotPlate[i] == "") {
+        for (int i = 0; i < (int)slotPlate.size(); i++) { //We cast the .size method to int because it outputs an unsigned integer rather than an int type
+            if (slotPlate[i] == "") { //Just checks whether or not the string is empty
                 cout << "Slot " << i << ": Empty\n";
             } else {
             cout << "Slot " << i << ": " << slotPlate[i] << "\n";
@@ -80,15 +83,15 @@ int main() {
     while (choice != 4) {
         cout << "\n1) Park\n2) Unpark\n3) Status\n4) End\nChoice: ";
         cin >> choice;
-
+        //Normal switch case menu based system.
         switch (choice) {
             case 1: {
                 string plate;
                 cout << "Enter License Plate: ";
                 cin >> plate;
-                string ticketId = lot.park(plate);
+                string ticketId = lot.park(plate); //Uses the park method to write the license plate into a lot.
                 if (ticketId == "") cout << "Parking full.\n";
-                else cout << "Parked. Ticket: " << ticketId << "\n";
+                else cout << "Parked.\nTicket ID: " << ticketId << "\n";
                 break;
             }
             case 2: {
