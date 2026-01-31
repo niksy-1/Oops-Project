@@ -7,7 +7,8 @@
 #include <sstream>
 #include <ctime>
 #include <cctype>
-#include <regex>
+#include <regex> //used to validate license plates
+#include <fstream> //used to write things out to a json file
 
 using namespace std;
 enum class VehicleType {TwoWheeler, FourWheeler}; // We use an enum to standardize inputs, remove errors with typos and stuff
@@ -33,6 +34,31 @@ static bool isValidPlateFormat(const string& plate) {//used to check whether or 
     static const regex plateRegex("^[A-Z]{2}[\\ -]{0,1}[0-9]{2}[\\ "
         "-]{0,1}[A-Z]{1,2}[\\ -]{0,1}[0-9]{4}$"); //Only god knows how regex works
     return regex_match(plate, plateRegex); //returns a boolean if it matches or not
+}
+static string formatDuration(long long ms) {
+    long long totalSecs = ms / 1000;
+    long long hours = totalSecs / 3600;
+    long long mins = (totalSecs % 3600) / 60;
+    long long secs = totalSecs % 60;
+    ostringstream out;
+    out << setfill('0') << setw(2) << hours << ":"
+        << setw(2) << mins << ":"
+        << setw(2) << secs;
+    return out.str();
+}
+static string jsonEscape(const string& input) {// used to insure that stuff doesn't break when special characters are used
+    ostringstream out;
+    for (char c : input) {
+        switch (c) {
+            case '\\': out << "\\\\"; break;
+            case '"': out << "\\\""; break;
+            case '\n': out << "\\n"; break;
+            case '\r': out << "\\r"; break;
+            case '\t': out << "\\t"; break;
+            default: out << c; break;
+        }
+    }
+    return out.str();
 }
 
 class ParkingLot {
@@ -67,6 +93,52 @@ class ParkingLot {
         cout << "Amount      : Rs " << fee << "\n";
         cout << "===================\n"; //We could use iomanip here to output this without having to do this manually
     }
+    void logVisit(const Ticket& t, long long exitMs, long long diffMs, long long fee) {
+        const string logFile = "log.json";//where logs are stored
+        ostringstream entry; // Sort of like the StringBuffer in Java, you can write to it without outputting anything instantly
+        entry << "  {\n"
+              << "    \"plate\": \"" << jsonEscape(t.plate) << "\",\n"  //json escape is used to make sure stuff like " or / dont break the code,
+                                                                        //it explicitly treats things as strings.
+              << "    \"entry_time\": \"" << jsonEscape(formatTime(t.entryMs)) << "\",\n"   //Format time and duration convert from epoch time to something that is human readable
+              << "    \"exit_time\": \"" << jsonEscape(formatTime(exitMs)) << "\",\n"
+              << "    \"time_spent\": \"" << jsonEscape(formatDuration(diffMs)) << "\",\n"
+              << "    \"amount\": " << fee << "\n"
+              << "  }";
+
+        ifstream in(logFile); //if a json file already exists, use that
+        string contents;
+        if (in) {
+            ostringstream buffer;
+            buffer << in.rdbuf();//Copy the contents of the file that already exist to the buffer
+            contents = buffer.str();
+        }
+        in.close();//close the file, like fclose in c
+
+        ofstream out(logFile, ios::trunc);//clears the file, and opens it to write a new version
+        if (!out) {
+            return;
+        }
+        if (contents.empty()) { //If the file is empty, it adds a new entry,
+            out << "[\n" << entry.str() << "\n]\n";
+            return;
+        }
+        size_t lastBracket = contents.find_last_of(']');// otherwise, it finds the last ], and inputs the entry after that
+        if (lastBracket == string::npos) {
+            out << "[\n" << entry.str() << "\n]\n";
+            return;
+        }
+        string trimmed = contents.substr(0, lastBracket);   // if it can't find a closing bracket, it assumes there's something wrong with the file and tries to overwrite
+                                                            // might want to change this behaviour, since it could overwrite valid data
+        while (!trimmed.empty() && (trimmed.back() == '\n' || trimmed.back() == '\r' || trimmed.back() == ' ' || trimmed.back() == '\t')) {
+            trimmed.pop_back();
+        }
+        if (!trimmed.empty() && trimmed.back() == '[') {
+            out << trimmed << "\n" << entry.str() << "\n]\n";
+        } else {
+            out << trimmed << ",\n" << entry.str() << "\n]\n";
+        }
+    }
+
 public:
     ParkingLot(int slots) : nSlots(slots), occupied(slots, false), slotPlate(slots, "") {} //Constructor to actually create parking lots, and set the value of all to empty.
                                                                     // occupied(slots, false) means make a vector of length slots, and fill it with false (all free).
@@ -126,6 +198,7 @@ public:
         long long billableHours = diffMs / 3600000;  // floor hours
         long long fee = computeBill(t.type, billableHours);
         outputReceipt(t, exitMs, diffMs, billableHours, fee);
+        logVisit(t, exitMs, diffMs, fee); //logs the ticket
         occupied[it->second.slotId] = false; // Free the slot that this ticket was occupying
                                             //"second." means go to the second item in the map, which is the ticket struct and .slotId finds the data in the struct
         slotPlate[it->second.slotId] = "";

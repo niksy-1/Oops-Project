@@ -1,4 +1,14 @@
 # depslib dependency file v1.0
-1743445502 source:c:\users\nikhil\documents\school work\oops\parking system\main.cpp
+1769869158 source:c:\users\nikhil\documents\school work\oops\parking system\main.cpp
 	<iostream>
+	<vector>
+	<unordered_map>
+	<string>
+	<chrono>
+	<iomanip>
+	<sstream>
+	<ctime>
+	<cctype>
+	<regex>
+	<fstream>
 
