@@ -30,8 +30,8 @@ int main() {
     ParkingLot lot(lotSize);
     int choice = 0;
 
-    while (choice != 5) {
-        std::cout << "\n1) Park\n2) Unpark\n3) Status\n4) Ticket information for a specific license plate\n5) End\nChoice: ";
+    while (choice != 6) {
+        std::cout << "\n1) Park\n2) Unpark\n3) Status\n4) Ticket information for a specific license plate\n5) Dump active tickets\n6) End\nChoice: ";
         if (!(std::cin >> choice)) {//Adding this because it kept crashing when closed with ctrl + c
             std::cin.clear();
             std::cin.ignore(100000, '\n');
@@ -85,6 +85,9 @@ int main() {
                 break;
             }
             case 5:
+                lot.dumpActiveTickets();
+                break;
+            case 6:
                 break;
             default:
                 std::cout << "Invalid choice.\n";

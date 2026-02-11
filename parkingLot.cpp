@@ -73,7 +73,6 @@ bool ParkingLot::unpark(const std::string& ticketId) {     // Returns true if ti
     activeTickets.erase(it);
     return true;
 }
-
 void ParkingLot::status() const {
     int freeCount = 0;
     for (bool x : occupied) if (!x) freeCount++; //Just a compressed method to loop through the occupied matrix,
@@ -90,7 +89,6 @@ void ParkingLot::status() const {
         }
     }
 }
-
 bool ParkingLot::checkByPlate(const std::string& plate) const {   //the second const here signifies that this function doesn't modify the parking lot object, just reads it
     for (const auto& kv : activeTickets) {  //The auto keyword here means that the compiler will decide the type of the variable kv(key value)
                                             //The for loop loops through every element in the map, and is a pair of <id> and <struct>, where
@@ -112,7 +110,21 @@ bool ParkingLot::checkByPlate(const std::string& plate) const {   //the second c
     }
     return false;
 }
+void ParkingLot::dumpActiveTickets() const {
+    if (activeTickets.empty()) {
+        std::cout << "No active tickets.\n";
+        return;
+    }
 
+    long long snapshotMs = nowMs();
+    for (const auto& kv : activeTickets) {
+        const Ticket& t = kv.second;
+        long long diffMs = snapshotMs - t.entryMs;
+        logActiveSnapshot(t, snapshotMs, diffMs);
+    }
+
+    std::cout << "Active tickets dumped to logger with exit_time as NA.\n";
+}
 void ParkingLot::outputReceipt(const Ticket& t, long long exitMs, long long diffMs, long long billableHours, long long fee) const {
     long long totalSecs = diffMs / 1000;
     long long mins = totalSecs / 60;
@@ -130,7 +142,59 @@ void ParkingLot::outputReceipt(const Ticket& t, long long exitMs, long long diff
     std::cout << "Amount      : Rs " << fee << "\n";
     std::cout << "===================\n"; //We could use iomanip here to output this without having to do this manually
 }
+void ParkingLot::logActiveSnapshot(const Ticket& t, long long snapshotMs, long long diffMs) const {
+    std::filesystem::create_directories("logs");
+    time_t tt = static_cast<time_t>(snapshotMs / 1000);
+    tm* lt = localtime(&tt);
+    std::ostringstream fileName;
+    fileName << "logs/log_" << (lt->tm_year + 1900) << "_"
+             << std::setfill('0') << std::setw(2) << (lt->tm_mon + 1) << "_"
+             << lt->tm_mday << ".json";
+    const std::string logFile = fileName.str();
 
+    std::ostringstream entry;
+    entry << "  {\n"
+          << "    \"ticket_id\": \"" << jsonEscape(t.ticketId) << "\",\n"
+          << "    \"plate\": \"" << jsonEscape(t.plate) << "\",\n"
+          << "    \"entry_time\": \"" << jsonEscape(formatTime(t.entryMs)) << "\",\n"
+          << "    \"exit_time\": \"NA\",\n"
+          << "    \"time_spent\": \"" << jsonEscape(formatDuration(diffMs)) << "\",\n"
+          << "    \"amount\": 0,\n"
+          << "    \"snapshot_time\": \"" << jsonEscape(formatTime(snapshotMs)) << "\"\n"
+          << "  }";
+
+    std::ifstream in(logFile);
+    std::string contents;
+    if (in) {
+        std::ostringstream buffer;
+        buffer << in.rdbuf();
+        contents = buffer.str();
+    }
+    in.close();
+
+    std::ofstream out(logFile, std::ios::trunc);
+    if (!out) {
+        return;
+    }
+    if (contents.empty()) {
+        out << "[\n" << entry.str() << "\n]\n";
+        return;
+    }
+    size_t lastBracket = contents.find_last_of(']');
+    if (lastBracket == std::string::npos) {
+        out << "[\n" << entry.str() << "\n]\n";
+        return;
+    }
+    std::string trimmed = contents.substr(0, lastBracket);
+    while (!trimmed.empty() && (trimmed.back() == '\n' || trimmed.back() == '\r' || trimmed.back() == ' ' || trimmed.back() == '\t')) {
+        trimmed.pop_back();
+    }
+    if (!trimmed.empty() && trimmed.back() == '[') {
+        out << trimmed << "\n" << entry.str() << "\n]\n";
+    } else {
+        out << trimmed << ",\n" << entry.str() << "\n]\n";
+    }
+}
 void ParkingLot::logVisit(const Ticket& t, long long exitMs, long long diffMs, long long fee) const {
     std::filesystem::create_directories("logs");
     time_t tt = static_cast<time_t>(exitMs / 1000);

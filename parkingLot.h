@@ -12,6 +12,7 @@ public:
     bool unpark(const std::string& ticketId);
     void status() const;
     bool checkByPlate(const std::string& plate) const;
+    void dumpActiveTickets() const;
 private:
     //Ticket holds ticket details, ie, the id of the ticket specifically, the License plate of the ticket, the parking slot its in, and the amount of time its been in the parking.
     struct Ticket {
@@ -23,6 +24,7 @@ private:
     };
     void outputReceipt(const Ticket& t, long long exitMs, long long diffMs, long long billableHours, long long fee) const;
     void logVisit(const Ticket& t, long long exitMs, long long diffMs, long long fee) const;
+    void logActiveSnapshot(const Ticket& t, long long snapshotMs, long long diffMs) const;
     int computeBill(VehicleType t, long long h) const;
     int nSlots; //total number of slots in the parking lot
     std::vector<bool> occupied;
