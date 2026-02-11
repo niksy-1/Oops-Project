@@ -202,12 +202,18 @@ void ParkingLot::logVisit(const Ticket& t, long long exitMs, long long diffMs, l
     std::ostringstream fileName;
     fileName << "logs/log_" << (lt->tm_year + 1900) << "_"
              << std::setfill('0') << std::setw(2) << (lt->tm_mon + 1) << "_"
-             << lt->tm_mday << ".json";
+             << std::setw(2) << std::setfill('0') << lt->tm_mday
+             << ".json";
+
     const std::string logFile = fileName.str(); //where logs are stored
     std::ostringstream entry; // Sort of like the StringBuffer in Java, you can write to it without outputting anything instantly
     entry << "  {\n"
           << "    \"plate\": \"" << jsonEscape(t.plate) << "\",\n"  //json escape is used to make sure stuff like " or / dont break the code,
                                                                   //it explicitly treats things as strings.
+          << "    \"vehicleType\": \"" 
+          << (t.type == VehicleType::TwoWheeler ? "TwoWheeler" : "FourWheeler") 
+          << "\",\n"
+
           << "    \"entry_time\": \"" << jsonEscape(formatTime(t.entryMs)) << "\",\n"   //Format time and duration convert from epoch time to something that is human readable
           << "    \"exit_time\": \"" << jsonEscape(formatTime(exitMs)) << "\",\n"
           << "    \"time_spent\": \"" << jsonEscape(formatDuration(diffMs)) << "\",\n"
@@ -246,4 +252,53 @@ void ParkingLot::logVisit(const Ticket& t, long long exitMs, long long diffMs, l
     } else {
         out << trimmed << ",\n" << entry.str() << "\n]\n";
     }
+}
+void ParkingLot::showDailyReport() {
+    long long currentMs = nowMs();
+    std::time_t t = static_cast<std::time_t>(currentMs / 1000);
+
+    std::tm* now = std::localtime(&t);
+
+    std::ostringstream filename;
+    filename << "logs/log_"
+             << (now->tm_year + 1900) << "_"
+             << std::setw(2) << std::setfill('0') << (now->tm_mon + 1) << "_"
+             << std::setw(2) << std::setfill('0') << now->tm_mday
+             << ".json";
+
+    std::ifstream file(filename.str());
+    std::cout << "Looking for file: " << filename.str() << std::endl;
+    if (!file) {
+        std::cout << "\nNo records found for today.\n";
+        return;
+    }
+
+    std::string line;
+    int totalVehicles = 0;
+    int twoWheelers = 0;
+    int fourWheelers = 0;
+    double totalRevenue = 0.0;
+
+    while (std::getline(file, line)) {
+
+    if (line.find("\"vehicleType\": \"TwoWheeler\"") != std::string::npos)
+        twoWheelers++;
+
+    if (line.find("\"vehicleType\": \"FourWheeler\"") != std::string::npos)
+        fourWheelers++;
+
+    if (line.find("\"amount\":") != std::string::npos) {
+        size_t pos = line.find("\"amount\":") + 9;
+        totalRevenue += std::stod(line.substr(pos));
+        totalVehicles++;   // each amount line = one vehicle
+    }
+}
+
+
+    std::cout << "\n========= Daily Report =========\n";
+    std::cout << "Total Vehicles Parked Today: " << totalVehicles << "\n";
+    std::cout << "Two-Wheelers: " << twoWheelers << "\n";
+    std::cout << "Four-Wheelers: " << fourWheelers << "\n";
+    std::cout << "Total Revenue: Rs. " << totalRevenue << "\n";
+    std::cout << "================================\n";
 }

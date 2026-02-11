@@ -2,9 +2,15 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <fstream>
+#include <sstream>
+#include <ctime>
+#include <iomanip>
+#include <iostream>
 enum class VehicleType { TwoWheeler, FourWheeler }; // We use an enum to standardize inputs, remove errors with typos and stuff
 class ParkingLot {
 public:
+    void showDailyReport();
     explicit ParkingLot(int slots);
 
     std::string park(const std::string& plate, VehicleType type);

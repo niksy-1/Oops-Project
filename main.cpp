@@ -6,6 +6,7 @@
 int main() {
     char testChoice = '\0';
     std::cout << "Test mode? (y/n): ";
+
     while (!(std::cin >> testChoice) || (std::tolower(static_cast<unsigned char>(testChoice)) != 'y'
         && std::tolower(static_cast<unsigned char>(testChoice)) != 'n')) {//Checking whether or not to run in test mode
         std::cin.clear();
@@ -30,8 +31,8 @@ int main() {
     ParkingLot lot(lotSize);
     int choice = 0;
 
-    while (choice != 6) {
-        std::cout << "\n1) Park\n2) Unpark\n3) Status\n4) Ticket information for a specific license plate\n5) Dump active tickets\n6) End\nChoice: ";
+    while (choice != 7) {
+        std::cout << "\n1) Park\n2) Unpark\n3) Status\n4) Ticket information for a specific license plate\n5) Dump active tickets\n 6)show daily report\n 7) End\nChoice: ";
         if (!(std::cin >> choice)) {//Adding this because it kept crashing when closed with ctrl + c
             std::cin.clear();
             std::cin.ignore(100000, '\n');
@@ -87,11 +88,18 @@ int main() {
             case 5:
                 lot.dumpActiveTickets();
                 break;
-            case 6:
+        
+            case 6:{
+                lot.showDailyReport();
                 break;
+            }
+            case 7:
+                break;
+
             default:
                 std::cout << "Invalid choice.\n";
         }
         std::cout<<std::endl;
     }
+    return 0;
 }
