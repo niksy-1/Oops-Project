@@ -1,6 +1,4 @@
 *.json
-*.cbp
-*.depend
 *.layout
 *.exe
 *.o
