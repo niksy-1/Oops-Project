@@ -120,7 +120,7 @@ void ParkingLot::outputReceipt(const Ticket& t, long long exitMs, long long diff
 
     std::cout << "\n===== RECEIPT =====\n";
     std::cout << "Ticket ID   : " << t.ticketId << "\n";
-    std::cout << "Plate       : " << t.plate << "\n";
+    std::cout << "Plate       : " << t.plate << "\n ";
     std::cout << "Type        : " << (t.type == VehicleType::TwoWheeler ? "2W" : "4W") << "\n";
     std::cout << "Slot        : " << (t.slotId + 1) << "\n";
     std::cout << "Time In     : " << formatTime(t.entryMs) << "\n";

@@ -62,10 +62,10 @@ std::string formatDuration(long long ms) {
 }
 
 std::string jsonEscape(const std::string& input) { // used to insure that stuff doesn't break when special characters are used
-    std::ostringstream out;
-    for (char c : input) {
+    std::ostringstream out; //looks through the ostream output
+    for (char c : input) { //loops through the input into the function
         switch (c) {
-            case '\\': out << "\\\\"; break;
+            case '\\': out << "\\\\"; break; //whenever it encounters a special character, it adds an escape character before it to turn it into a normal word
             case '"': out << "\\\""; break;
             case '\n': out << "\\n"; break;
             case '\r': out << "\\r"; break;
