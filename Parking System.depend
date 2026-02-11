@@ -1,0 +1,34 @@
+# depslib dependency file v1.0
+1770833601 source:c:\users\nikhil\documents\school work\oops\parking system\main.cpp
+	<cctype>
+	<iostream>
+	"parkingLot.h"
+	"parkingUtils.h"
+
+1770833601 source:c:\users\nikhil\documents\school work\oops\parking system\parkinglot.cpp
+	"parkingLot.h"
+	<fstream>
+	<iomanip>
+	<iostream>
+	<sstream>
+	<ctime>
+	<filesystem>
+	"parkingUtils.h"
+
+1770833378 c:\users\nikhil\documents\school work\oops\parking system\parkinglot.h
+	<string>
+	<unordered_map>
+	<vector>
+
+1769874375 c:\users\nikhil\documents\school work\oops\parking system\parkingutils.h
+	<string>
+
+1770833601 source:c:\users\nikhil\documents\school work\oops\parking system\parkingutils.cpp
+	"parkingUtils.h"
+	<chrono>
+	<cctype>
+	<ctime>
+	<iomanip>
+	<regex>
+	<sstream>
+
