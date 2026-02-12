@@ -10,6 +10,8 @@ A simple C++ console application that manages a parking lot, issues tickets, cal
 - Lookup active tickets by license plate.
 - Optional test mode that scales time (1 second = 5 minutes).
 - Daily JSON log files under `logs/` for completed visits.
+- Option to output all current active tickets to a json log
+- Option to output a summary for the day at EOD.
 
 ## Project Structure
 
@@ -35,3 +37,4 @@ g++ -std=c++17 -O2 -Wall -Wextra -pedantic -o parking_lot main.cpp parkingLot.cp
 - **Ticket ID**: On park, a ticket like `T1` is issued. You must provide it to unpark.
 - **Logs**: When a vehicle is unparked, a JSON entry is appended to `logs/log_YYYY_MM_DD.json`.
 - **Test mode**: Answer `y` at startup to enable time scaling for easier billing tests.
+
