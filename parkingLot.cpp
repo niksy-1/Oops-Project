@@ -254,12 +254,12 @@ void ParkingLot::logVisit(const Ticket& t, long long exitMs, long long diffMs, l
     }
 }
 void ParkingLot::showDailyReport() {
-    long long currentMs = nowMs();
-    std::time_t t = static_cast<std::time_t>(currentMs / 1000);
+    long long currentMs = nowMs();// we use the current time to find the log file for the current day, since the log files are named according to the date.
+    std::time_t t = static_cast<std::time_t>(currentMs / 1000);// convert from milliseconds to seconds for time_t, since time_t works with seconds since epoch
 
     std::tm* now = std::localtime(&t);
 
-    std::ostringstream filename;
+    std::ostringstream filename;// we use ostringstream to create the filename string, since it allows us to easily format the date with leading zeros and stuff.
     filename << "logs/log_"
              << (now->tm_year + 1900) << "_"
              << std::setw(2) << std::setfill('0') << (now->tm_mon + 1) << "_"
@@ -279,7 +279,7 @@ void ParkingLot::showDailyReport() {
     int fourWheelers = 0;
     double totalRevenue = 0.0;
 
-    while (std::getline(file, line)) {
+    while (std::getline(file, line)) {// we read the file line by line, and look for the relevant information to compute the report. We could optimize this by using a json library to parse the file, but since the file is not too big, this should be fine.
 
     if (line.find("\"vehicleType\": \"TwoWheeler\"") != std::string::npos)
         twoWheelers++;
@@ -294,7 +294,7 @@ void ParkingLot::showDailyReport() {
     }
 }
 
-
+    // Output the report
     std::cout << "\n========= Daily Report =========\n";
     std::cout << "Total Vehicles Parked Today: " << totalVehicles << "\n";
     std::cout << "Two-Wheelers: " << twoWheelers << "\n";
