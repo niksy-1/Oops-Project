@@ -1,15 +1,16 @@
 # Oops-Project Parking Lot (Java)
 
-A Java console application that manages a parking lot, issues tickets, calculates fees, and writes visit logs as JSON files.
+A Java parking-lot application with a desktop GUI (Swing), plus a console fallback for headless environments. It manages parking slots, issues tickets, calculates fees, and writes visit logs as JSON files.
 
 ## Design
 
 The code follows the class diagram with the following key classes:
 
-- `GateSystem` (orchestration / UI actions)
+- `GateSystem` (orchestration / business operations)
 - `ParkingManager` (slot and active-ticket management)
 - `FeeCalculator` (billing rules)
 - `StorageService` (log persistence + daily summary)
+- `ParkingLotGUI` (desktop user interface)
 - `Ticket`
 - `Slot`
 - `Vehicle`, `TwoWheeler`, `FourWheeler`
@@ -18,17 +19,20 @@ The code follows the class diagram with the following key classes:
 ## Build
 
 ```bash
-javac src/*.java
+javac *.java
 ```
 
 ## Run
 
 ```bash
-java -cp src Main
+java Main
 ```
 
 ## Notes
 
 - **License plate format**: expects values like `AA11AA1111` (optional spaces/hyphens allowed by validator).
-- **Test mode**: `y` scales time so `1 second = 5 minutes`.
+- **Test mode**: when enabled, `1 second = 5 minutes`.
 - **Logs**: written under `logs/log_YYYY_MM_DD.json`.
+- **Environment behavior**:
+  - On systems with a display, the Swing GUI opens.
+  - In headless environments, the app automatically falls back to console mode.
