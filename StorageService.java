@@ -6,7 +6,9 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 public class StorageService {
     private final String filePath;
@@ -18,7 +20,7 @@ public class StorageService {
     public void saveToLog(Ticket ticket, double fee, long exitTime) {
         String file = dailyLogPath(exitTime);
         long diffMs = exitTime - ticket.getEntryTime();
-        String vehicleType = ticket.getVehicle().getType() == VehicleType.TWO_WHEELER ? "TwoWheeler" : "FourWheeler";
+        String vehicleType = ticket.getVehicle().getType().getStorageLabel();
 
         String entry = "  {\n"
                 + "    \"ticket_id\": \"" + ParkingUtils.jsonEscape(ticket.getTicketID()) + "\",\n"
@@ -63,18 +65,19 @@ public class StorageService {
         }
 
         int totalVehicles = 0;
-        int twoWheelers = 0;
-        int fourWheelers = 0;
+        Map<VehicleType, Integer> vehicleCounts = new EnumMap<>(VehicleType.class);
+        for (VehicleType type : VehicleType.values()) {
+            vehicleCounts.put(type, 0);
+        }
         long totalRevenue = 0;
 
         try {
             List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
             for (String line : lines) {
-                if (line.contains("\"vehicleType\": \"TwoWheeler\"")) {
-                    twoWheelers++;
-                }
-                if (line.contains("\"vehicleType\": \"FourWheeler\"")) {
-                    fourWheelers++;
+                for (VehicleType type : VehicleType.values()) {
+                    if (line.contains("\"vehicleType\": \"" + type.getStorageLabel() + "\"")) {
+                        vehicleCounts.put(type, vehicleCounts.get(type) + 1);
+                    }
                 }
                 if (line.contains("\"amount\":")) {
                     String amount = line.substring(line.indexOf("\"amount\":") + 9).trim().replace(",", "");
@@ -92,8 +95,9 @@ public class StorageService {
 
         System.out.println("\n========= Daily Report =========");
         System.out.println("Total Vehicles Parked Today: " + totalVehicles);
-        System.out.println("Two-Wheelers: " + twoWheelers);
-        System.out.println("Four-Wheelers: " + fourWheelers);
+        for (VehicleType type : VehicleType.values()) {
+            System.out.println(type.getDisplayName() + "s: " + vehicleCounts.get(type));
+        }
         System.out.println("Total Revenue: Rs. " + totalRevenue);
         System.out.println("================================");
     }
