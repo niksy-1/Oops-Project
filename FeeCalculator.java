@@ -1,25 +1,35 @@
+import java.util.EnumMap;
+import java.util.Map;
+
 public class FeeCalculator {
+    private final Map<VehicleType, FeePolicy> policies;
+
+    public FeeCalculator() {
+        this.policies = new EnumMap<>(VehicleType.class);
+        registerPolicy(VehicleType.TWO_WHEELER, new SlabFeePolicy(50, 100, 250));
+        registerPolicy(VehicleType.FOUR_WHEELER, new SlabFeePolicy(100, 300, 500));
+    }
+
+    public void registerPolicy(VehicleType type, FeePolicy policy) {
+        if (type == null || policy == null) {
+            throw new IllegalArgumentException("Vehicle type and policy are required");
+        }
+        policies.put(type, policy);
+    }
+
     public double calculate(long entry, long exit, VehicleType type) {
-        if (exit <= entry) {
-            return 0;
+        FeePolicy policy = policies.get(type);
+        if (policy == null) {
+            throw new IllegalStateException("No fee policy registered for type: " + type);
         }
-
-        long hours = (exit - entry) / 3_600_000L;
-
-        if (type == VehicleType.FOUR_WHEELER) {
-            if (hours == 0) return 0;
-            if (hours == 1) return 100;
-            if (hours <= 3) return 100 + (hours - 1) * 300;
-            return 100 + 2 * 300 + (hours - 3) * 500;
-        }
-
-        if (hours == 0) return 0;
-        if (hours == 1) return 50;
-        if (hours <= 3) return 50 + (hours - 1) * 100;
-        return 50 + 2 * 100 + (hours - 3) * 250;
+        return policy.calculate(entry, exit);
     }
 
     public int getRate(VehicleType type) {
-        return type == VehicleType.FOUR_WHEELER ? 100 : 50;
+        FeePolicy policy = policies.get(type);
+        if (policy == null) {
+            throw new IllegalStateException("No fee policy registered for type: " + type);
+        }
+        return policy.getBaseRate();
     }
 }

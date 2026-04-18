@@ -8,7 +8,7 @@ The code follows the class diagram with the following key classes:
 
 - `GateSystem` (orchestration / business operations)
 - `ParkingManager` (slot and active-ticket management)
-- `FeeCalculator` (billing rules)
+- `FeeCalculator` (billing rules with pluggable fee policies)
 - `StorageService` (log persistence + daily summary)
 - `ParkingLotGUI` (desktop user interface)
 - `Ticket`
@@ -36,3 +36,5 @@ java Main
 - **Environment behavior**:
   - On systems with a display, the Swing GUI opens.
   - In headless environments, the app automatically falls back to console mode.
+
+- **Extending pricing**: register additional `FeePolicy` implementations in `FeeCalculator` without modifying existing billing logic.
