@@ -21,7 +21,7 @@ public class ParkingLotGUI extends JFrame {
     private final GateSystem gateSystem;
 
     private final JTextField plateInput = new JTextField(14);
-    private final JComboBox<String> typeSelect = new JComboBox<>(new String[]{"Two Wheeler", "Four Wheeler"});
+    private final JComboBox<VehicleType> typeSelect = new JComboBox<>(VehicleType.values());
     private final JTextField ticketIdInput = new JTextField(10);
     private final JTextField searchPlateInput = new JTextField(14);
 
@@ -129,7 +129,12 @@ public class ParkingLotGUI extends JFrame {
             return;
         }
 
-        VehicleType type = typeSelect.getSelectedIndex() == 0 ? VehicleType.TWO_WHEELER : VehicleType.FOUR_WHEELER;
+        VehicleType type = (VehicleType) typeSelect.getSelectedItem();
+        if (type == null) {
+            showError("Please select a valid vehicle type.");
+            return;
+        }
+
         String ticketId = gateSystem.handleParking(plate, type);
 
         if (ticketId.isEmpty()) {

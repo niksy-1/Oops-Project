@@ -112,9 +112,29 @@ public class Main
                         System.out.println("Invalid plate format. Expected format: AA11AA1111");
                         continue;
                     }
-                    System.out.print("Enter Vehicle Type(1 for Two Wheeler, 2 for Four Wheeler): ");
-                    int typeInput = Integer.parseInt(scanner.nextLine().trim());
-                    VehicleType type = typeInput == 1 ? VehicleType.TWO_WHEELER : VehicleType.FOUR_WHEELER;
+                    System.out.println("Select Vehicle Type:");
+                    VehicleType[] types = VehicleType.values();
+                    for (int i = 0; i < types.length; i++)
+					{
+                        System.out.println((i + 1) + " for " + types[i].getDisplayName());
+                    }
+
+                    VehicleType type;
+                    try
+					{
+                        int typeInput = Integer.parseInt(scanner.nextLine().trim());
+                        type = VehicleType.fromMenuOption(typeInput);
+                    } catch (NumberFormatException e)
+					{
+                        type = null;
+                    }
+
+                    if (type == null)
+					{
+                        System.out.println("Invalid vehicle type selection.");
+                        continue;
+                    }
+
                     String ticketId = gateSystem.handleParking(plate, type);
 					System.out.println(ticketId.isEmpty() ? "Parking full or duplicate active vehicle." : "Parked. Ticket ID: " + ticketId);
                 }
