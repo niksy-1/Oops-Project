@@ -23,7 +23,11 @@ public class GateSystem {
             return "";
         }
 
-        Vehicle vehicle = type == VehicleType.TWO_WHEELER ? new TwoWheeler(plate) : new FourWheeler(plate);
+        Vehicle vehicle = createVehicle(plate, type);
+        if (vehicle == null) {
+            return "";
+        }
+
         Ticket ticket = manager.issueTicket(vehicle);
         return ticket == null ? "" : ticket.getTicketID();
     }
@@ -129,6 +133,17 @@ public class GateSystem {
         List<Ticket> tickets = new ArrayList<>(manager.getActiveTickets().values());
         tickets.sort(Comparator.comparingInt(Ticket::getAssignedSlot));
         return tickets;
+    }
+
+    private Vehicle createVehicle(String plate, VehicleType type) {
+        if (type == null) {
+            return null;
+        }
+
+        return switch (type) {
+            case TWO_WHEELER -> new TwoWheeler(plate);
+            case FOUR_WHEELER -> new FourWheeler(plate);
+        };
     }
 
     private String buildReceipt(Ticket ticket, long exitMs, double fee) {
