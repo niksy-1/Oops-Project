@@ -139,11 +139,7 @@ public class GateSystem {
         if (type == null) {
             return null;
         }
-
-        return switch (type) {
-            case TWO_WHEELER -> new TwoWheeler(plate);
-            case FOUR_WHEELER -> new FourWheeler(plate);
-        };
+        return new Vehicle(plate, type);
     }
 
     private String buildReceipt(Ticket ticket, long exitMs, double fee) {
@@ -156,7 +152,7 @@ public class GateSystem {
         return "\n===== RECEIPT =====\n"
                 + "Ticket ID   : " + ticket.getTicketID() + "\n"
                 + "Plate       : " + ticket.getVehicle().getLicensePlate() + "\n"
-                + "Type        : " + (ticket.getVehicle().getType() == VehicleType.TWO_WHEELER ? "2W" : "4W") + "\n"
+                + "Type        : " + ticket.getVehicle().getType().getShortCode() + "\n"
                 + "Slot        : " + (ticket.getAssignedSlot() + 1) + "\n"
                 + "Time In     : " + ParkingUtils.formatTime(ticket.getEntryTime()) + "\n"
                 + "Time Out    : " + ParkingUtils.formatTime(exitMs) + "\n"

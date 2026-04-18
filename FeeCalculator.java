@@ -6,8 +6,9 @@ public class FeeCalculator {
 
     public FeeCalculator() {
         this.policies = new EnumMap<>(VehicleType.class);
-        registerPolicy(VehicleType.TWO_WHEELER, new SlabFeePolicy(50, 100, 250));
-        registerPolicy(VehicleType.FOUR_WHEELER, new SlabFeePolicy(100, 300, 500));
+        for (VehicleType type : VehicleType.values()) {
+            registerPolicy(type, type.createFeePolicy());
+        }
     }
 
     public void registerPolicy(VehicleType type, FeePolicy policy) {

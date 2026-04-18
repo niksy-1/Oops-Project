@@ -1,8 +1,8 @@
-public abstract class Vehicle {
+public class Vehicle {
     private final String licensePlate;
     private final VehicleType type;
 
-    protected Vehicle(String licensePlate, VehicleType type) {
+    public Vehicle(String licensePlate, VehicleType type) {
         this.licensePlate = licensePlate;
         this.type = type;
     }
